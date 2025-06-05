@@ -2,84 +2,75 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Loop Talk Video Calling App</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
 </head>
 <body>
-
-  <!-- Branding Header -->
-  <header>
-    <h1>Loop Talk Video Calling App</h1>
-    <p>
-      Developed by 
-      <a href="https://github.com/CodeWithVedang" target="_blank" rel="noopener noreferrer">CodeWithVedang</a>
-    </p>
-  </header>
-
-  <!-- Skeleton Loader -->
-  <div id="skeletonLoader" class="skeleton-loader"></div>
-
-  <!-- Welcome Page -->
-  <div id="welcomePage" class="welcome-screen" style="display:none;">
-    <div class="welcome-box animate-fade">
-      <h2>Welcome to <span class="gradient-text">Loop Talk</span></h2>
-      <p>Seamless, private video calls directly from your browser. <br>No signup, no tracking—just you and your people.</p>
-      <button id="welcomeStartBtn" class="primary-btn big-btn">Start Calling Free</button>
+  <!-- Welcome Screen -->
+  <div id="welcome" class="welcome">
+    <div class="welcome-content">
+      <h1>Loop Talk</h1>
+      <p>Private, peer-to-peer video calling from your browser.<br>No signup. No hassle.</p>
+      <button id="startCallingBtn">Start Calling Free</button>
     </div>
+    <footer>
+      Developed by <a href="https://github.com/CodeWithVedang" target="_blank">CodeWithVedang</a>
+    </footer>
   </div>
 
-  <!-- Role selection popup -->
-  <div class="popup-screen" id="rolePopup" style="display:none;">
+  <!-- Role Selection -->
+  <div id="rolePopup" class="popup hidden">
     <div class="popup-box">
-      <h2>Select an option</h2>
-      <button class="role-btn" onclick="chooseRole('create')">Create Call</button>
-      <button class="role-btn" onclick="chooseRole('join')">Join Call</button>
+      <h2>What would you like to do?</h2>
+      <button onclick="chooseRole('create')">Create Call</button>
+      <button onclick="chooseRole('join')">Join Call</button>
     </div>
   </div>
 
-  <!-- Create call popup -->
-  <div class="popup-screen" id="createPopup" style="display:none;">
+  <!-- Create Call -->
+  <div id="createPopup" class="popup hidden">
     <div class="popup-box">
       <h2>Your Call ID</h2>
       <input type="text" id="myId" readonly />
-      <button id="copyBtn">Copy ID</button>
-      <button id="startBtn" class="primary-btn">Start Call</button>
+      <button onclick="copyId()">Copy</button>
+      <button id="startBtn">Start Call</button>
     </div>
   </div>
 
-  <!-- Join call popup -->
-  <div class="popup-screen" id="joinPopup" style="display:none;">
+  <!-- Join Call -->
+  <div id="joinPopup" class="popup hidden">
     <div class="popup-box">
-      <h2>Enter Call ID to Join</h2>
-      <input type="text" id="connectTo" placeholder="Enter Call ID" />
-      <button id="connectBtn" class="primary-btn">Join Call</button>
+      <h2>Enter Call ID</h2>
+      <input type="text" id="connectTo" placeholder="Call ID" />
+      <button id="connectBtn">Join Call</button>
     </div>
   </div>
 
-  <!-- Video container + controls -->
-  <div class="video-container" style="display:none;">
-    <div class="video-wrapper">
-      <video id="localVideo" autoplay muted playsinline></video>
-      <p class="video-label">You</p>
+  <!-- Video Interface -->
+  <div id="videoInterface" class="hidden">
+    <div class="brand-header">
+      <h2>Loop Talk Video Calling App</h2>
+      <p>Developed by <a href="https://github.com/CodeWithVedang" target="_blank">CodeWithVedang</a></p>
     </div>
-    <div class="video-wrapper">
-      <video id="remoteVideo" autoplay playsinline></video>
-      <p class="video-label">Caller</p>
-    </div>
-  </div>
 
-  <div class="controls" style="display:none;">
-    <button id="toggleVideoBtn" title="Toggle Video" aria-label="Toggle Video">
-      <span id="videoIcon">📹</span>
-    </button>
-    <button id="toggleAudioBtn" title="Toggle Microphone" aria-label="Toggle Microphone">
-      <span id="audioIcon">🎤</span>
-    </button>
-    <button id="endCallBtn" title="End Call" aria-label="End Call" class="end-call-btn">
-      ❌ End Call
-    </button>
+    <div class="video-area">
+      <div class="video-box">
+        <video id="localVideo" autoplay muted></video>
+        <p>You</p>
+      </div>
+      <div class="video-box">
+        <video id="remoteVideo" autoplay></video>
+        <p>Caller</p>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="toggleVideoBtn">📹</button>
+      <button id="toggleAudioBtn">🎤</button>
+      <button id="endCallBtn" class="end">❌ End Call</button>
+    </div>
   </div>
 
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
