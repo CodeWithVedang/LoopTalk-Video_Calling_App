@@ -54,6 +54,13 @@ startBtn.onclick = async () => {
       waitingPopup.style.display = "none";
     });
   });
+
+  peer.on('error', err => {
+    alert("Error: " + err);
+    console.error(err);
+    waitingPopup.style.display = "none";
+    rolePopup.style.display = "flex";
+  });
 };
 
 connectBtn.onclick = async () => {
@@ -61,6 +68,7 @@ connectBtn.onclick = async () => {
   if (!target) return alert("Enter a valid ID to connect.");
 
   joinPopup.style.display = "none";
+  waitingPopup.style.display = "flex";
 
   peer = new Peer();
 
@@ -72,6 +80,25 @@ connectBtn.onclick = async () => {
 
     call.on("stream", remoteStream => {
       remoteVideo.srcObject = remoteStream;
+      waitingPopup.style.display = "none";
     });
+
+    call.on("close", () => {
+      alert("Call ended.");
+      window.location.reload();
+    });
+
+    call.on("error", err => {
+      alert("Call error: " + err);
+      console.error(err);
+      window.location.reload();
+    });
+  });
+
+  peer.on('error', err => {
+    alert("Peer error: " + err);
+    console.error(err);
+    waitingPopup.style.display = "none";
+    rolePopup.style.display = "flex";
   });
 };
