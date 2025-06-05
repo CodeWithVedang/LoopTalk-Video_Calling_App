@@ -1,90 +1,247 @@
+/* Reset & base */
+* {
+  box-sizing: border-box;
+  user-select: none;
+}
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #121212;
-  color: white;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: #121212;
+  color: #eee;
+  min-height: 100vh;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  height: 100vh;
+  padding: 0 10px 30px;
 }
+
+/* Header */
+header {
+  text-align: center;
+  margin: 20px 0 10px;
+  user-select: text;
+}
+
+header h1 {
+  margin: 0 0 5px;
+  font-weight: 700;
+  font-size: 1.8rem;
+  color: #00b894;
+  letter-spacing: 1px;
+}
+
+header p {
+  margin: 0;
+  font-size: 1rem;
+  color: #aaa;
+}
+
+header p a {
+  color: #00cec9;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+header p a:hover,
+header p a:focus {
+  text-decoration: underline;
+}
+
+/* Popups */
 
 .popup-screen {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(0, 0, 0, 0.95);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 9999;
+  padding: 0 15px;
 }
 
 .popup-box {
-  background-color: #1e1e1e;
-  padding: 30px 40px;
-  border-radius: 12px;
-  text-align: center;
-  width: 90%;
+  background: #222;
+  border-radius: 15px;
+  padding: 30px 30px 35px;
   max-width: 400px;
-  box-shadow: 0 0 15px #00b894;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 0 20px #00b894aa;
 }
 
 .popup-box h2 {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+  font-size: 1.6rem;
   font-weight: 600;
-  font-size: 1.5rem;
+  color: #00b894;
+  user-select: text;
 }
 
-.popup-box input {
-  width: 80%;
-  padding: 10px;
-  margin-bottom: 15px;
+.popup-box input[type="text"] {
+  width: 100%;
+  padding: 12px 15px;
+  font-size: 1rem;
   border-radius: 8px;
   border: none;
-  font-size: 1rem;
-  text-align: center;
-  background-color: #333;
-  color: white;
+  background: #333;
+  color: #eee;
+  margin-bottom: 20px;
   user-select: all;
+  text-align: center;
+}
+
+.popup-box input[type="text"]:focus {
+  outline: 2px solid #00b894;
 }
 
 .popup-box button {
-  padding: 10px 20px;
-  margin: 5px;
-  border-radius: 8px;
+  padding: 12px 25px;
+  font-size: 1.1rem;
+  border-radius: 10px;
   border: none;
-  background-color: #00b894;
-  color: white;
   cursor: pointer;
+  margin: 0 8px 8px 8px;
   font-weight: 600;
-  font-size: 1rem;
   transition: background-color 0.3s ease;
+  user-select: none;
 }
 
-.popup-box button:hover {
+.role-btn {
+  background-color: #00b894;
+  color: #121212;
+  width: 45%;
+}
+
+.role-btn:hover,
+.role-btn:focus {
   background-color: #019875;
 }
 
+.primary-btn {
+  background-color: #0984e3;
+  color: #eee;
+  width: 100%;
+}
+
+.primary-btn:hover,
+.primary-btn:focus {
+  background-color: #0652dd;
+}
+
+/* Video container */
 .video-container {
+  margin-top: 15px;
+  width: 100%;
+  max-width: 900px;
   display: flex;
   justify-content: center;
   gap: 20px;
-  width: 90%;
-  max-width: 900px;
-  padding: 20px;
-  margin: 0 auto;
+  flex-wrap: wrap;
+  user-select: none;
+}
+
+.video-wrapper {
+  flex: 1 1 45%;
+  min-width: 250px;
+  position: relative;
 }
 
 video {
-  width: 45%;
-  max-width: 450px;
-  border-radius: 12px;
-  background-color: black;
-  box-shadow: 0 0 15px #00b894;
+  width: 100%;
+  border-radius: 15px;
+  background-color: #000;
+  box-shadow: 0 0 30px #00b894aa;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
 }
 
+.video-label {
+  position: absolute;
+  bottom: 8px;
+  left: 12px;
+  color: #00b894;
+  font-weight: 700;
+  text-shadow: 0 0 5px #000;
+  font-size: 1.1rem;
+  user-select: text;
+}
+
+/* Controls */
+.controls {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  user-select: none;
+}
+
+.controls button {
+  background-color: #222;
+  border: none;
+  padding: 14px 20px;
+  font-size: 1.6rem;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 0 15px #00b894aa;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  color: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 120px;
+  user-select: none;
+}
+
+.controls button:hover,
+.controls button:focus {
+  background-color: #00b894;
+  color: #121212;
+}
+
+.end-call-btn {
+  background-color: #d63031;
+  color: white;
+  font-weight: 700;
+  min-width: 130px;
+}
+
+.end-call-btn:hover,
+.end-call-btn:focus {
+  background-color: #e17055;
+}
+
+/* Icons styling */
+#videoIcon,
+#audioIcon {
+  font-size: 1.6rem;
+  user-select: none;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-  video {
-    width: 90%;
+  header h1 {
+    font-size: 1.4rem;
+  }
+
+  header p {
+    font-size: 0.9rem;
+  }
+
+  .video-container {
+    flex-direction: column;
+  }
+
+  .video-wrapper {
+    flex: 1 1 100%;
+  }
+
+  .controls button {
+    min-width: 100px;
+    font-size: 1.3rem;
+    padding: 12px 15px;
   }
 }

@@ -1,18 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Peer-to-Peer Video Call</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Loop Talk Video Calling App</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
+  <!-- Branding Header -->
+  <header>
+    <h1>Loop Talk Video Calling App</h1>
+    <p>
+      Developed by 
+      <a href="https://github.com/CodeWithVedang" target="_blank" rel="noopener noreferrer">CodeWithVedang</a>
+    </p>
+  </header>
+
   <!-- Role selection popup -->
   <div class="popup-screen" id="rolePopup">
     <div class="popup-box">
       <h2>Select an option</h2>
-      <button onclick="chooseRole('create')">Create Call</button>
-      <button onclick="chooseRole('join')">Join Call</button>
+      <button class="role-btn" onclick="chooseRole('create')">Create Call</button>
+      <button class="role-btn" onclick="chooseRole('join')">Join Call</button>
     </div>
   </div>
 
@@ -22,7 +32,7 @@
       <h2>Your Call ID</h2>
       <input type="text" id="myId" readonly />
       <button id="copyBtn">Copy ID</button>
-      <button id="startBtn">Start Call</button>
+      <button id="startBtn" class="primary-btn">Start Call</button>
     </div>
   </div>
 
@@ -31,14 +41,35 @@
     <div class="popup-box">
       <h2>Enter Call ID to Join</h2>
       <input type="text" id="connectTo" placeholder="Enter Call ID" />
-      <button id="connectBtn">Join Call</button>
+      <button id="connectBtn" class="primary-btn">Join Call</button>
     </div>
   </div>
 
-  <!-- Video container -->
+  <!-- Video container + controls -->
   <div class="video-container" style="display:none;">
-    <video id="localVideo" autoplay muted playsinline></video>
-    <video id="remoteVideo" autoplay playsinline></video>
+
+    <div class="video-wrapper">
+      <video id="localVideo" autoplay muted playsinline></video>
+      <p class="video-label">You</p>
+    </div>
+
+    <div class="video-wrapper">
+      <video id="remoteVideo" autoplay playsinline></video>
+      <p class="video-label">Caller</p>
+    </div>
+
+  </div>
+
+  <div class="controls" style="display:none;">
+    <button id="toggleVideoBtn" title="Toggle Video" aria-label="Toggle Video">
+      <span id="videoIcon">📹</span>
+    </button>
+    <button id="toggleAudioBtn" title="Toggle Microphone" aria-label="Toggle Microphone">
+      <span id="audioIcon">🎤</span>
+    </button>
+    <button id="endCallBtn" title="End Call" aria-label="End Call" class="end-call-btn">
+      ❌ End Call
+    </button>
   </div>
 
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
