@@ -21,7 +21,12 @@ const chatMessages = document.getElementById("chatMessages");
 const sendMsgBtn = document.getElementById("sendMsgBtn");
 
 let localStream, currentCall, currentConn, timerInterval;
-let peer = new Peer({ host: 'peerjs-server.herokuapp.com', secure: true, port: 443 });
+let peer = new Peer({
+  host: '0.peerjs.com',
+  port: 443,
+  secure: true,
+  debug: 3 // Enable detailed logging for debugging
+});
 
 document.getElementById("startCallingBtn").onclick = () => {
   welcome.classList.add("hidden");
@@ -32,14 +37,27 @@ function chooseRole(role) {
   rolePopup.classList.add("hidden");
   if (role === "create") {
     createPopup.classList.remove("hidden");
+    
+    // Timeout for ID generation
+    const timeout = setTimeout(() => {
+      if (joinLink.innerText === "Generating link...") {
+        joinLink.innerText = "Failed to generate link. Please refresh and try again.";
+        alert("Failed to connect to PeerJS server. Please check your network and try again.");
+      }
+    }, 10000); // 10-second timeout
+
     peer.on("open", id => {
+      clearTimeout(timeout);
+      console.log("PeerJS ID generated:", id);
       myIdInput.value = id;
       joinLink.innerText = `${window.location.origin}${window.location.pathname}?join=${id}`;
     });
+
     peer.on("error", err => {
-      console.error("PeerJS Error:", err);
-      alert("Failed to generate Call ID. Please try again.");
-      joinLink.innerText = "Failed to generate link.";
+      clearTimeout(timeout);
+      console.error("PeerJS Error:", err.type, err.message);
+      joinLink.innerText = "Failed to generate link. Please refresh and try again.";
+      alert(`Failed to generate Call ID: ${err.message}. Please try again.`);
     });
   } else {
     joinPopup.classList.remove("hidden");
@@ -51,11 +69,15 @@ function copyId() {
     navigator.clipboard.writeText(myIdInput.value);
     alert("Call ID copied!");
   } else {
-    alert("No Call ID available to copy.");
+    alert("No Call ID available to copy. Please wait for the ID to generate.");
   }
 }
 
 document.getElementById("startBtn").onclick = async () => {
+  if (!myIdInput.value) {
+    alert("Call ID not generated yet. Please wait or refresh.");
+    return;
+  }
   try {
     createPopup.classList.add("hidden");
     videoInterface.classList.remove("hidden");
@@ -102,7 +124,10 @@ document.getElementById("connectBtn").onclick = async () => {
     call.on("stream", stream => {
       remoteVideo.srcObject = stream;
     });
-    call.on("error", err => console.error("Call Error:", err));
+    call.on("error", err => {
+      console.error("Call Error:", err);
+      alert("Failed to connect to peer. Please check the Call ID.");
+    });
 
     const conn = peer.connect(connectToInput.value);
     currentConn = conn;
