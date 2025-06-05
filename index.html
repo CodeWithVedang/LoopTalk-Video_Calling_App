@@ -10,11 +10,9 @@
 <body>
   <div id="welcome" class="welcome-screen">
     <h1>Loop Talk Video Calling App</h1>
-    <p>Free, private, peer-to-peer video calls. No signup required.</p>
+    <p>Free, private, peer-to-peer video calls with chat and visualizer.</p>
     <button id="startCallingBtn" class="btn primary">Start Calling Free</button>
-    <footer>
-      Developed by <a href="https://github.com/CodeWithVedang" target="_blank">CodeWithVedang</a>
-    </footer>
+    <footer>Developed by <a href="https://github.com/CodeWithVedang" target="_blank">CodeWithVedang</a></footer>
   </div>
 
   <div id="rolePopup" class="popup hidden">
@@ -32,6 +30,7 @@
       <button onclick="copyId()" class="btn copy">Copy</button>
       <button id="startBtn" class="btn primary">Start Call</button>
     </div>
+    <p id="joinLink" class="join-link"></p>
   </div>
 
   <div id="joinPopup" class="popup hidden">
@@ -47,10 +46,25 @@
     <div class="local-video">
       <video id="localVideo" autoplay playsinline muted></video>
     </div>
+
+    <!-- Timer -->
+    <div id="callTimer" class="call-timer">00:00</div>
+
+    <!-- Audio Visualizer -->
+    <canvas id="visualizer"></canvas>
+
+    <!-- Controls -->
     <div class="controls">
       <button id="toggleVideoBtn" class="btn control">📹</button>
       <button id="toggleAudioBtn" class="btn control">🎤</button>
       <button id="endCallBtn" class="btn end">End Call</button>
+    </div>
+
+    <!-- Chat -->
+    <div class="chat-box">
+      <div id="chatMessages"></div>
+      <input id="chatInput" type="text" placeholder="Type a message..." />
+      <button id="sendMsgBtn">Send</button>
     </div>
   </div>
 
