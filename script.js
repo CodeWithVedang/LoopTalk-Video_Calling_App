@@ -21,12 +21,48 @@ const chatMessages = document.getElementById("chatMessages");
 const sendMsgBtn = document.getElementById("sendMsgBtn");
 
 let localStream, currentCall, currentConn, timerInterval;
-let peer = new Peer({
-  host: '0.peerjs.com',
-  port: 443,
-  secure: true,
-  debug: 3 // Enable detailed logging for debugging
-});
+let peer;
+
+// Function to initialize PeerJS with retry logic
+function initializePeer(attempt = 1, maxAttempts = 3) {
+  console.log(`Attempting to connect to PeerJS server (Attempt ${attempt}/${maxAttempts})`);
+  peer = new Peer({
+    debug: 3 // Enable detailed logging
+    // Use default PeerJS cloud server (no specific host)
+  });
+
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      if (joinLink.innerText === "Generating link...") {
+        if (attempt < maxAttempts) {
+          console.warn(`PeerJS connection timed out. Retrying (${attempt + 1}/${maxAttempts})...`);
+          peer.destroy();
+          resolve(initializePeer(attempt + 1, maxAttempts));
+        } else {
+          reject(new Error("Failed to connect to PeerJS server after multiple attempts."));
+        }
+      }
+    }, 10000);
+
+    peer.on("open", id => {
+      clearTimeout(timeout);
+      console.log("PeerJS ID generated:", id);
+      resolve(id);
+    });
+
+    peer.on("error", err => {
+      clearTimeout(timeout);
+      console.error("PeerJS Error:", err.type, err.message);
+      if (attempt < maxAttempts) {
+        console.warn(`PeerJS error on attempt ${attempt}. Retrying...`);
+        peer.destroy();
+        resolve(initializePeer(attempt + 1, maxAttempts));
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
 
 document.getElementById("startCallingBtn").onclick = () => {
   welcome.classList.add("hidden");
@@ -37,27 +73,15 @@ function chooseRole(role) {
   rolePopup.classList.add("hidden");
   if (role === "create") {
     createPopup.classList.remove("hidden");
+    joinLink.innerText = "Generating link...";
     
-    // Timeout for ID generation
-    const timeout = setTimeout(() => {
-      if (joinLink.innerText === "Generating link...") {
-        joinLink.innerText = "Failed to generate link. Please refresh and try again.";
-        alert("Failed to connect to PeerJS server. Please check your network and try again.");
-      }
-    }, 10000); // 10-second timeout
-
-    peer.on("open", id => {
-      clearTimeout(timeout);
-      console.log("PeerJS ID generated:", id);
+    initializePeer().then(id => {
       myIdInput.value = id;
       joinLink.innerText = `${window.location.origin}${window.location.pathname}?join=${id}`;
-    });
-
-    peer.on("error", err => {
-      clearTimeout(timeout);
-      console.error("PeerJS Error:", err.type, err.message);
+    }).catch(err => {
+      console.error("PeerJS Initialization Failed:", err);
       joinLink.innerText = "Failed to generate link. Please refresh and try again.";
-      alert(`Failed to generate Call ID: ${err.message}. Please try again.`);
+      alert(`Failed to connect to PeerJS server: ${err.message}. Please check your network or try again later.`);
     });
   } else {
     joinPopup.classList.remove("hidden");
@@ -162,6 +186,7 @@ endCallBtn.onclick = () => {
   if (currentCall) currentCall.close();
   if (currentConn) currentConn.close();
   if (localStream) localStream.getTracks().forEach(track => track.stop());
+  if (peer) peer.destroy();
   clearInterval(timerInterval);
   location.reload();
 };
