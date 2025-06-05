@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>Loop Talk Video Calling App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -17,11 +18,14 @@
     </p>
   </header>
 
+  <!-- Skeleton Loader -->
+  <div id="skeletonLoader" class="skeleton-loader"></div>
+
   <!-- Welcome Page -->
-  <div id="welcomePage" class="welcome-screen">
-    <div class="welcome-box">
-      <h2>Welcome to Loop Talk</h2>
-      <p>Enjoy free, easy, and secure peer-to-peer video calls. No sign-ups or downloads needed. Just connect and talk instantly with friends and family.</p>
+  <div id="welcomePage" class="welcome-screen" style="display:none;">
+    <div class="welcome-box animate-fade">
+      <h2>Welcome to <span class="gradient-text">Loop Talk</span></h2>
+      <p>Seamless, private video calls directly from your browser. <br>No signup, no tracking—just you and your people.</p>
       <button id="welcomeStartBtn" class="primary-btn big-btn">Start Calling Free</button>
     </div>
   </div>
@@ -56,17 +60,14 @@
 
   <!-- Video container + controls -->
   <div class="video-container" style="display:none;">
-
     <div class="video-wrapper">
       <video id="localVideo" autoplay muted playsinline></video>
       <p class="video-label">You</p>
     </div>
-
     <div class="video-wrapper">
       <video id="remoteVideo" autoplay playsinline></video>
       <p class="video-label">Caller</p>
     </div>
-
   </div>
 
   <div class="controls" style="display:none;">

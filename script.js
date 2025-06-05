@@ -1,188 +1,101 @@
-const rolePopup = document.getElementById("rolePopup");
-const createPopup = document.getElementById("createPopup");
-const joinPopup = document.getElementById("joinPopup");
-const videoContainer = document.querySelector(".video-container");
-const controls = document.querySelector(".controls");
+// Skeleton loader → Welcome screen
+window.onload = function () {
+  setTimeout(() => {
+    document.getElementById("skeletonLoader").style.display = "none";
+    document.getElementById("welcomePage").style.display = "flex";
+  }, 1000);
+};
 
-const myIdInput = document.getElementById("myId");
-const connectInput = document.getElementById("connectTo");
-const copyBtn = document.getElementById("copyBtn");
-const startBtn = document.getElementById("startBtn");
-const connectBtn = document.getElementById("connectBtn");
-
-const toggleVideoBtn = document.getElementById("toggleVideoBtn");
-const toggleAudioBtn = document.getElementById("toggleAudioBtn");
-const endCallBtn = document.getElementById("endCallBtn");
-
-const videoIcon = document.getElementById("videoIcon");
-const audioIcon = document.getElementById("audioIcon");
-
-const localVideo = document.getElementById("localVideo");
-const remoteVideo = document.getElementById("remoteVideo");
+document.getElementById("welcomeStartBtn").onclick = () => {
+  document.getElementById("welcomePage").style.display = "none";
+  document.getElementById("rolePopup").style.display = "flex";
+};
 
 let peer;
 let localStream;
 let currentCall;
 
-function generateId() {
-  return 'user-' + Math.random().toString(36).substring(2, 8);
-}
-
+// Select Role
 function chooseRole(role) {
-  rolePopup.style.display = "none";
+  document.getElementById("rolePopup").style.display = "none";
   if (role === "create") {
-    myIdInput.value = generateId();
-    createPopup.style.display = "flex";
+    const id = Math.random().toString(36).substr(2, 9);
+    document.getElementById("myId").value = id;
+    document.getElementById("createPopup").style.display = "flex";
+    peer = new Peer(id);
+    peer.on("call", answerCall);
   } else {
-    joinPopup.style.display = "flex";
+    document.getElementById("joinPopup").style.display = "flex";
+    peer = new Peer();
+    peer.on("open", () => {});
   }
 }
 
-copyBtn.onclick = () => {
-  navigator.clipboard.writeText(myIdInput.value)
-    .then(() => alert("Copied Call ID!"))
-    .catch(() => alert("Copy failed!"));
+// Copy Call ID
+document.getElementById("copyBtn").onclick = () => {
+  const id = document.getElementById("myId").value;
+  navigator.clipboard.writeText(id);
+  alert("Call ID copied!");
 };
 
-startBtn.onclick = async () => {
-  createPopup.style.display = "none";
-  videoContainer.style.display = "flex";
-  controls.style.display = "flex";
+// Start Call
+document.getElementById("startBtn").onclick = async () => {
+  await startMedia();
+  document.getElementById("createPopup").style.display = "none";
+};
 
-  peer = new Peer(myIdInput.value);
+// Join Call
+document.getElementById("connectBtn").onclick = async () => {
+  const id = document.getElementById("connectTo").value.trim();
+  if (!id) return alert("Enter a valid Call ID");
+  await startMedia();
+  const call = peer.call(id, localStream);
+  setupCall(call);
+  document.getElementById("joinPopup").style.display = "none";
+};
 
-  peer.on("open", async (id) => {
-    console.log("My peer ID:", id);
-    try {
-      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      localVideo.srcObject = localStream;
-    } catch (e) {
-      alert("Error accessing camera/mic: " + e.message);
-      window.location.reload();
-      return;
-    }
+// Handle Incoming Call
+function answerCall(call) {
+  call.answer(localStream);
+  setupCall(call);
+}
 
-    peer.on("call", (call) => {
-      currentCall = call;
-      call.answer(localStream);
-      call.on("stream", (remoteStream) => {
-        remoteVideo.srcObject = remoteStream;
-      });
-      call.on("close", () => endCall());
-      call.on("error", (err) => {
-        alert("Call error: " + err);
-        endCall();
-      });
-    });
+// Setup Media
+async function startMedia() {
+  localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  document.getElementById("localVideo").srcObject = localStream;
+  document.querySelector(".video-container").style.display = "flex";
+  document.querySelector(".controls").style.display = "flex";
+}
+
+// Setup Call
+function setupCall(call) {
+  currentCall = call;
+  call.on("stream", (remoteStream) => {
+    document.getElementById("remoteVideo").srcObject = remoteStream;
   });
+  call.on("close", endCall);
+}
 
-  peer.on("error", (err) => {
-    alert("Peer error: " + err);
-    console.error(err);
-    window.location.reload();
-  });
+// Toggle Video
+document.getElementById("toggleVideoBtn").onclick = () => {
+  localStream.getVideoTracks()[0].enabled = !localStream.getVideoTracks()[0].enabled;
 };
 
-connectBtn.onclick = async () => {
-  const targetId = connectInput.value.trim();
-  if (!targetId) return alert("Please enter a Call ID.");
-
-  joinPopup.style.display = "none";
-  videoContainer.style.display = "flex";
-  controls.style.display = "flex";
-
-  peer = new Peer();
-
-  peer.on("open", async (id) => {
-    console.log("My peer ID:", id);
-    try {
-      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      localVideo.srcObject = localStream;
-    } catch (e) {
-      alert("Error accessing camera/mic: " + e.message);
-      window.location.reload();
-      return;
-    }
-
-    currentCall = peer.call(targetId, localStream);
-
-    currentCall.on("stream", (remoteStream) => {
-      remoteVideo.srcObject = remoteStream;
-    });
-
-    currentCall.on("close", () => endCall());
-    currentCall.on("error", (err) => {
-      alert("Call error: " + err);
-      endCall();
-    });
-  });
-
-  peer.on("error", (err) => {
-    alert("Peer error: " + err);
-    console.error(err);
-    window.location.reload();
-  });
+// Toggle Audio
+document.getElementById("toggleAudioBtn").onclick = () => {
+  localStream.getAudioTracks()[0].enabled = !localStream.getAudioTracks()[0].enabled;
 };
 
-// Controls buttons:
-
-toggleVideoBtn.onclick = () => {
-  if (!localStream) return;
-  const videoTrack = localStream.getVideoTracks()[0];
-  if (!videoTrack) return;
-
-  videoTrack.enabled = !videoTrack.enabled;
-  videoIcon.textContent = videoTrack.enabled ? "📹" : "🚫";
-  toggleVideoBtn.title = videoTrack.enabled ? "Turn Off Video" : "Turn On Video";
-};
-
-toggleAudioBtn.onclick = () => {
-  if (!localStream) return;
-  const audioTrack = localStream.getAudioTracks()[0];
-  if (!audioTrack) return;
-
-  audioTrack.enabled = !audioTrack.enabled;
-  audioIcon.textContent = audioTrack.enabled ? "🎤" : "🔇";
-  toggleAudioBtn.title = audioTrack.enabled ? "Mute Microphone" : "Unmute Microphone";
-};
-
-endCallBtn.onclick = () => {
-  if (currentCall) {
-    currentCall.close();
-  }
+// End Call
+document.getElementById("endCallBtn").onclick = () => {
+  if (currentCall) currentCall.close();
   endCall();
 };
 
 function endCall() {
   if (localStream) {
-    localStream.getTracks().forEach(track => track.stop());
+    localStream.getTracks().forEach((t) => t.stop());
   }
-  localVideo.srcObject = null;
-  remoteVideo.srcObject = null;
-  videoContainer.style.display = "none";
-  controls.style.display = "none";
-  currentCall = null;
-  if (peer) peer.destroy();
-  peer = null;
-
-  rolePopup.style.display = "flex";
-  createPopup.style.display = "none";
-  joinPopup.style.display = "none";
-
-  // Reset inputs
-  connectInput.value = "";
-  myIdInput.value = "";
+  location.reload();
 }
-// Existing code...
-
-// Welcome screen elements
-const welcomePage = document.getElementById("welcomePage");
-const welcomeStartBtn = document.getElementById("welcomeStartBtn");
-
-// On welcome button click, hide welcome page & show role popup
-welcomeStartBtn.onclick = () => {
-  welcomePage.style.display = "none";
-  rolePopup.style.display = "flex";
-};
-
-// rest of your existing script.js code follows below...
