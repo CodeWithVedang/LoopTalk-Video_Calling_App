@@ -4,83 +4,139 @@ const createPopup = document.getElementById("createPopup");
 const joinPopup = document.getElementById("joinPopup");
 const videoInterface = document.getElementById("videoInterface");
 
-let peer;
-let localStream;
-let currentCall;
+const startCallingBtn = document.getElementById("startCallingBtn");
+const startBtn = document.getElementById("startBtn");
+const connectBtn = document.getElementById("connectBtn");
+const toggleVideoBtn = document.getElementById("toggleVideoBtn");
+const toggleAudioBtn = document.getElementById("toggleAudioBtn");
+const endCallBtn = document.getElementById("endCallBtn");
 
-document.getElementById("startCallingBtn").onclick = () => {
+const myIdInput = document.getElementById("myId");
+const connectToInput = document.getElementById("connectTo");
+const localVideo = document.getElementById("localVideo");
+const remoteVideo = document.getElementById("remoteVideo");
+
+let peer = null;
+let localStream = null;
+let currentCall = null;
+
+// Show role selection popup
+startCallingBtn.addEventListener("click", () => {
   welcome.style.display = "none";
   rolePopup.classList.remove("hidden");
-};
+});
 
+// Role selection
 function chooseRole(role) {
   rolePopup.classList.add("hidden");
 
   if (role === "create") {
-    const id = Math.random().toString(36).substring(2, 10);
-    document.getElementById("myId").value = id;
+    const id = generateId();
+    myIdInput.value = id;
+
     peer = new Peer(id);
+    peer.on("open", () => console.log("Peer opened with ID:", id));
+
     peer.on("call", (call) => {
-      navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
-        localStream = stream;
-        document.getElementById("localVideo").srcObject = stream;
+      getLocalStream().then((stream) => {
         call.answer(stream);
+        setupLocalStream(stream);
         call.on("stream", (remoteStream) => {
-          document.getElementById("remoteVideo").srcObject = remoteStream;
+          remoteVideo.srcObject = remoteStream;
         });
         currentCall = call;
-        showInterface();
+        showVideoInterface();
       });
     });
+
     createPopup.classList.remove("hidden");
   } else {
     peer = new Peer();
+    peer.on("open", (id) => {
+      console.log("Joining as peer with ID:", id);
+    });
     joinPopup.classList.remove("hidden");
   }
 }
 
-document.getElementById("startBtn").onclick = async () => {
-  createPopup.classList.add("hidden");
-  showInterface();
-};
+// Generate random ID
+function generateId() {
+  return Math.random().toString(36).substring(2, 10);
+}
 
-document.getElementById("connectBtn").onclick = () => {
-  const connectToId = document.getElementById("connectTo").value.trim();
-  if (!connectToId) return alert("Enter a valid ID");
-  navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
-    localStream = stream;
-    document.getElementById("localVideo").srcObject = stream;
-    const call = peer.call(connectToId, stream);
+// Copy Call ID
+function copyId() {
+  navigator.clipboard.writeText(myIdInput.value);
+  alert("Call ID copied!");
+}
+
+// Start call (for Create)
+startBtn.addEventListener("click", () => {
+  createPopup.classList.add("hidden");
+  // Wait for incoming call
+  alert("Waiting for another user to join using this ID.");
+});
+
+// Join Call
+connectBtn.addEventListener("click", () => {
+  const id = connectToInput.value.trim();
+  if (!id) return alert("Please enter a valid Call ID");
+
+  getLocalStream().then((stream) => {
+    setupLocalStream(stream);
+    const call = peer.call(id, stream);
+
     call.on("stream", (remoteStream) => {
-      document.getElementById("remoteVideo").srcObject = remoteStream;
+      remoteVideo.srcObject = remoteStream;
     });
+
     currentCall = call;
     joinPopup.classList.add("hidden");
-    showInterface();
+    showVideoInterface();
   });
-};
+});
 
-function showInterface() {
+// Get user media stream
+function getLocalStream() {
+  return navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+}
+
+// Setup local video
+function setupLocalStream(stream) {
+  localStream = stream;
+  localVideo.srcObject = stream;
+}
+
+// Show video UI
+function showVideoInterface() {
   videoInterface.classList.remove("hidden");
 }
 
-function copyId() {
-  const id = document.getElementById("myId").value;
-  navigator.clipboard.writeText(id);
-  alert("Copied: " + id);
-}
+// Toggle Video
+toggleVideoBtn.addEventListener("click", () => {
+  if (localStream) {
+    const videoTrack = localStream.getVideoTracks()[0];
+    videoTrack.enabled = !videoTrack.enabled;
+    toggleVideoBtn.textContent = videoTrack.enabled ? "📹" : "📷";
+  }
+});
 
-// Controls
-document.getElementById("toggleVideoBtn").onclick = () => {
-  localStream.getVideoTracks()[0].enabled = !localStream.getVideoTracks()[0].enabled;
-};
+// Toggle Audio
+toggleAudioBtn.addEventListener("click", () => {
+  if (localStream) {
+    const audioTrack = localStream.getAudioTracks()[0];
+    audioTrack.enabled = !audioTrack.enabled;
+    toggleAudioBtn.textContent = audioTrack.enabled ? "🎤" : "🔇";
+  }
+});
 
-document.getElementById("toggleAudioBtn").onclick = () => {
-  localStream.getAudioTracks()[0].enabled = !localStream.getAudioTracks()[0].enabled;
-};
-
-document.getElementById("endCallBtn").onclick = () => {
-  if (currentCall) currentCall.close();
-  if (localStream) localStream.getTracks().forEach(t => t.stop());
-  location.reload();
-};
+// End Call
+endCallBtn.addEventListener("click", () => {
+  if (currentCall) {
+    currentCall.close();
+  }
+  if (localStream) {
+    localStream.getTracks().forEach(track => track.stop());
+  }
+  location.reload(); // reload to reset app
+});
