@@ -23,12 +23,18 @@ const sendMsgBtn = document.getElementById("sendMsgBtn");
 let localStream, currentCall, currentConn, timerInterval;
 let peer;
 
-// Function to initialize PeerJS with retry logic
+// Initialize PeerJS with STUN/TURN servers for WebRTC
 function initializePeer(attempt = 1, maxAttempts = 3) {
   console.log(`Attempting to connect to PeerJS server (Attempt ${attempt}/${maxAttempts})`);
   peer = new Peer({
+    config: {
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" }, // Free STUN server
+        // Add TURN server credentials if available (e.g., from Twilio or Xirsys)
+        // { urls: "turn:your.turn.server", username: "username", credential: "password" }
+      ]
+    },
     debug: 3 // Enable detailed logging
-    // Use default PeerJS cloud server (no specific host)
   });
 
   return new Promise((resolve, reject) => {
@@ -113,9 +119,18 @@ document.getElementById("startBtn").onclick = async () => {
       currentCall = call;
       call.answer(localStream);
       call.on("stream", stream => {
+        console.log("Received remote stream");
         remoteVideo.srcObject = stream;
       });
-      call.on("error", err => console.error("Call Error:", err));
+      call.on("error", err => {
+        console.error("Call Error:", err);
+        alert(`Call error: ${err.message}. Please try again.`);
+      });
+      call.on("close", () => {
+        console.log("Call closed");
+        alert("Call disconnected. Returning to main screen.");
+        endCallBtn.onclick();
+      });
       startCallTimer();
     });
 
@@ -123,15 +138,19 @@ document.getElementById("startBtn").onclick = async () => {
       currentConn = conn;
       conn.on("data", addChatMessage);
       conn.on("error", err => console.error("Connection Error:", err));
+      conn.on("close", () => console.log("Chat connection closed"));
     });
   } catch (err) {
     console.error("Media Error:", err);
-    alert("Failed to access camera/microphone. Please check permissions.");
+    alert("Failed to access camera/microphone. Please check permissions and ensure devices are available.");
+    videoInterface.classList.add("hidden");
+    createPopup.classList.remove("hidden");
   }
 };
 
 document.getElementById("connectBtn").onclick = async () => {
-  if (!connectToInput.value.trim()) {
+  const peerId = connectToInput.value.trim();
+  if (!peerId) {
     alert("Please enter a valid Call ID.");
     return;
   }
@@ -143,25 +162,42 @@ document.getElementById("connectBtn").onclick = async () => {
     localVideo.srcObject = localStream;
     startVisualizer(localStream);
 
-    const call = peer.call(connectToInput.value, localStream);
+    const call = peer.call(peerId, localStream);
+    if (!call) {
+      throw new Error("Failed to initiate call. Peer may not be available.");
+    }
     currentCall = call;
     call.on("stream", stream => {
+      console.log("Received remote stream");
       remoteVideo.srcObject = stream;
     });
     call.on("error", err => {
       console.error("Call Error:", err);
-      alert("Failed to connect to peer. Please check the Call ID.");
+      alert(`Failed to connect to peer: ${err.message}. Please check the Call ID and try again.`);
+      videoInterface.classList.add("hidden");
+      joinPopup.classList.remove("hidden");
+    });
+    call.on("close", () => {
+      console.log("Call closed");
+      alert("Call disconnected. Returning to main screen.");
+      endCallBtn.onclick();
     });
 
-    const conn = peer.connect(connectToInput.value);
+    const conn = peer.connect(peerId);
+    if (!conn) {
+      throw new Error("Failed to initiate chat connection.");
+    }
     currentConn = conn;
     conn.on("data", addChatMessage);
     conn.on("error", err => console.error("Connection Error:", err));
+    conn.on("close", () => console.log("Chat connection closed"));
 
     startCallTimer();
   } catch (err) {
-    console.error("Media Error:", err);
-    alert("Failed to access camera/microphone or connect to peer. Please check permissions and Call ID.");
+    console.error("Error in join call:", err);
+    alert(`Failed to start call: ${err.message}. Please check permissions, Call ID, and network.`);
+    videoInterface.classList.add("hidden");
+    joinPopup.classList.remove("hidden");
   }
 };
 
@@ -198,6 +234,8 @@ sendMsgBtn.onclick = () => {
     currentConn.send(msg);
     addChatMessage(`You: ${msg}`);
     chatInput.value = "";
+  } else if (!currentConn) {
+    alert("No active chat connection. Please ensure the call is connected.");
   }
 };
 
