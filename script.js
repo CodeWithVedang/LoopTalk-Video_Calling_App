@@ -6,6 +6,7 @@ const videoInterface = document.getElementById("videoInterface");
 
 const myIdInput = document.getElementById("myId");
 const connectToInput = document.getElementById("connectTo");
+const joinLink = document.getElementById("joinLink");
 
 const localVideo = document.getElementById("localVideo");
 const remoteVideo = document.getElementById("remoteVideo");
@@ -19,8 +20,8 @@ const chatInput = document.getElementById("chatInput");
 const chatMessages = document.getElementById("chatMessages");
 const sendMsgBtn = document.getElementById("sendMsgBtn");
 
-let localStream, currentCall, timerInterval;
-let peer = new Peer();
+let localStream, currentCall, currentConn, timerInterval;
+let peer = new Peer({ host: 'peerjs-server.herokuapp.com', secure: true, port: 443 });
 
 document.getElementById("startCallingBtn").onclick = () => {
   welcome.classList.add("hidden");
@@ -33,7 +34,12 @@ function chooseRole(role) {
     createPopup.classList.remove("hidden");
     peer.on("open", id => {
       myIdInput.value = id;
-      document.getElementById("joinLink").innerText = `${window.location.href}?join=${id}`;
+      joinLink.innerText = `${window.location.origin}${window.location.pathname}?join=${id}`;
+    });
+    peer.on("error", err => {
+      console.error("PeerJS Error:", err);
+      alert("Failed to generate Call ID. Please try again.");
+      joinLink.innerText = "Failed to generate link.";
     });
   } else {
     joinPopup.classList.remove("hidden");
@@ -41,75 +47,101 @@ function chooseRole(role) {
 }
 
 function copyId() {
-  navigator.clipboard.writeText(myIdInput.value);
-  alert("Call ID copied!");
+  if (myIdInput.value) {
+    navigator.clipboard.writeText(myIdInput.value);
+    alert("Call ID copied!");
+  } else {
+    alert("No Call ID available to copy.");
+  }
 }
 
 document.getElementById("startBtn").onclick = async () => {
-  createPopup.classList.add("hidden");
-  videoInterface.classList.remove("hidden");
-  localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-  localVideo.srcObject = localStream;
-  startVisualizer(localStream);
+  try {
+    createPopup.classList.add("hidden");
+    videoInterface.classList.remove("hidden");
+    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    localVideo.srcObject = localStream;
+    startVisualizer(localStream);
 
-  peer.on("call", call => {
-    currentCall = call;
-    call.answer(localStream);
-    call.on("stream", stream => {
-      remoteVideo.srcObject = stream;
+    peer.on("call", call => {
+      currentCall = call;
+      call.answer(localStream);
+      call.on("stream", stream => {
+        remoteVideo.srcObject = stream;
+      });
+      call.on("error", err => console.error("Call Error:", err));
+      startCallTimer();
     });
-    startCallTimer();
-  });
 
-  peer.on("connection", conn => {
-    conn.on("data", addChatMessage);
-    currentConn = conn;
-  });
+    peer.on("connection", conn => {
+      currentConn = conn;
+      conn.on("data", addChatMessage);
+      conn.on("error", err => console.error("Connection Error:", err));
+    });
+  } catch (err) {
+    console.error("Media Error:", err);
+    alert("Failed to access camera/microphone. Please check permissions.");
+  }
 };
 
 document.getElementById("connectBtn").onclick = async () => {
-  joinPopup.classList.add("hidden");
-  videoInterface.classList.remove("hidden");
+  if (!connectToInput.value.trim()) {
+    alert("Please enter a valid Call ID.");
+    return;
+  }
+  try {
+    joinPopup.classList.add("hidden");
+    videoInterface.classList.remove("hidden");
 
-  localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-  localVideo.srcObject = localStream;
-  startVisualizer(localStream);
+    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    localVideo.srcObject = localStream;
+    startVisualizer(localStream);
 
-  const call = peer.call(connectToInput.value, localStream);
-  currentCall = call;
-  call.on("stream", stream => {
-    remoteVideo.srcObject = stream;
-  });
+    const call = peer.call(connectToInput.value, localStream);
+    currentCall = call;
+    call.on("stream", stream => {
+      remoteVideo.srcObject = stream;
+    });
+    call.on("error", err => console.error("Call Error:", err));
 
-  const conn = peer.connect(connectToInput.value);
-  conn.on("data", addChatMessage);
-  currentConn = conn;
+    const conn = peer.connect(connectToInput.value);
+    currentConn = conn;
+    conn.on("data", addChatMessage);
+    conn.on("error", err => console.error("Connection Error:", err));
 
-  startCallTimer();
+    startCallTimer();
+  } catch (err) {
+    console.error("Media Error:", err);
+    alert("Failed to access camera/microphone or connect to peer. Please check permissions and Call ID.");
+  }
 };
 
 // Controls
 toggleVideoBtn.onclick = () => {
-  const videoTrack = localStream.getVideoTracks()[0];
-  videoTrack.enabled = !videoTrack.enabled;
-  toggleVideoBtn.textContent = videoTrack.enabled ? "📹" : "🚫📹";
+  if (localStream) {
+    const videoTrack = localStream.getVideoTracks()[0];
+    videoTrack.enabled = !videoTrack.enabled;
+    toggleVideoBtn.textContent = videoTrack.enabled ? "📹" : "🚫📹";
+  }
 };
 
 toggleAudioBtn.onclick = () => {
-  const audioTrack = localStream.getAudioTracks()[0];
-  audioTrack.enabled = !audioTrack.enabled;
-  toggleAudioBtn.textContent = audioTrack.enabled ? "🎤" : "🔇";
+  if (localStream) {
+    const audioTrack = localStream.getAudioTracks()[0];
+    audioTrack.enabled = !audioTrack.enabled;
+    toggleAudioBtn.textContent = audioTrack.enabled ? "🎤" : "🔇";
+  }
 };
 
 endCallBtn.onclick = () => {
   if (currentCall) currentCall.close();
+  if (currentConn) currentConn.close();
   if (localStream) localStream.getTracks().forEach(track => track.stop());
   clearInterval(timerInterval);
   location.reload();
 };
 
 // Chat
-let currentConn;
 sendMsgBtn.onclick = () => {
   const msg = chatInput.value.trim();
   if (msg && currentConn) {

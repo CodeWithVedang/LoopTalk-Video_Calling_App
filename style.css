@@ -33,6 +33,10 @@ footer a {
   margin-top: 5vh;
 }
 
+.popup h2 {
+  margin-bottom: 1rem;
+}
+
 .popup input {
   padding: 0.7rem;
   width: 80%;
@@ -47,6 +51,7 @@ footer a {
   margin-top: 1rem;
   font-size: 0.9rem;
   color: #444;
+  word-break: break-all;
 }
 
 .btn-group {
@@ -172,4 +177,12 @@ footer a {
   padding: 0.6rem;
   font-weight: bold;
   cursor: pointer;
+}
+
+#visualizer {
+  position: absolute;
+  bottom: 130px;
+  right: 10px;
+  width: 200px;
+  height: 50px;
 }
