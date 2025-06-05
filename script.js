@@ -173,3 +173,16 @@ function endCall() {
   connectInput.value = "";
   myIdInput.value = "";
 }
+// Existing code...
+
+// Welcome screen elements
+const welcomePage = document.getElementById("welcomePage");
+const welcomeStartBtn = document.getElementById("welcomeStartBtn");
+
+// On welcome button click, hide welcome page & show role popup
+welcomeStartBtn.onclick = () => {
+  welcomePage.style.display = "none";
+  rolePopup.style.display = "flex";
+};
+
+// rest of your existing script.js code follows below...

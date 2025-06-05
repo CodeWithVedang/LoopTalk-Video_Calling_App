@@ -221,6 +221,65 @@ video {
   user-select: none;
 }
 
+/* Welcome Page */
+.welcome-screen {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #00b894, #0984e3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  z-index: 10000;
+  text-align: center;
+  color: white;
+  user-select: none;
+}
+
+.welcome-box {
+  background: rgba(0,0,0,0.35);
+  padding: 40px 30px;
+  border-radius: 20px;
+  max-width: 400px;
+  box-shadow: 0 0 30px #00ffe0aa;
+}
+
+.welcome-box h2 {
+  font-size: 2.2rem;
+  margin-bottom: 15px;
+  font-weight: 700;
+  text-shadow: 0 0 10px #000000cc;
+}
+
+.welcome-box p {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  margin-bottom: 30px;
+  user-select: text;
+}
+
+.big-btn {
+  font-size: 1.4rem;
+  padding: 16px 0;
+  width: 100%;
+  border-radius: 15px;
+  font-weight: 700;
+  background: #00ffe0;
+  color: #00504d;
+  box-shadow: 0 0 20px #00ffe0cc;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  user-select: none;
+}
+
+.big-btn:hover,
+.big-btn:focus {
+  background: #00b894;
+  color: white;
+  box-shadow: 0 0 30px #00b894cc;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   header h1 {
