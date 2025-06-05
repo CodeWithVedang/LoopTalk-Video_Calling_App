@@ -1,7 +1,8 @@
+// DOM elements
 const rolePopup = document.getElementById("rolePopup");
 const createPopup = document.getElementById("createPopup");
 const joinPopup = document.getElementById("joinPopup");
-const waitingPopup = document.getElementById("waitingPopup");
+const videoContainer = document.querySelector(".video-container");
 
 const myIdInput = document.getElementById("myId");
 const connectInput = document.getElementById("connectTo");
@@ -14,91 +15,94 @@ const remoteVideo = document.getElementById("remoteVideo");
 
 let peer;
 let localStream;
-let call;
+let currentCall;
 
-const generateId = () => 'user-' + Math.random().toString(36).substring(2, 8);
+// Generate random ID
+function generateId() {
+  return 'user-' + Math.random().toString(36).substring(2, 8);
+}
 
+// Show Create or Join popup
 function chooseRole(role) {
   rolePopup.style.display = "none";
-  if (role === 'create') {
-    const id = generateId();
-    myIdInput.value = id;
+  if (role === "create") {
+    myIdInput.value = generateId();
     createPopup.style.display = "flex";
   } else {
     joinPopup.style.display = "flex";
   }
 }
 
+// Copy Call ID
 copyBtn.onclick = () => {
-  navigator.clipboard.writeText(myIdInput.value);
-  alert("Copied ID!");
+  navigator.clipboard.writeText(myIdInput.value)
+    .then(() => alert("Copied Call ID!"))
+    .catch(() => alert("Copy failed!"));
 };
 
+// Start call as creator
 startBtn.onclick = async () => {
   createPopup.style.display = "none";
-  waitingPopup.style.display = "flex";
+  videoContainer.style.display = "flex";
 
   peer = new Peer(myIdInput.value);
 
-  peer.on("open", id => console.log("Peer opened:", id));
-
-  peer.on("call", async incomingCall => {
+  peer.on("open", async (id) => {
+    console.log("My peer ID:", id);
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     localVideo.srcObject = localStream;
 
-    call = incomingCall;
-    call.answer(localStream);
-
-    call.on("stream", remoteStream => {
-      remoteVideo.srcObject = remoteStream;
-      waitingPopup.style.display = "none";
+    peer.on("call", (call) => {
+      currentCall = call;
+      call.answer(localStream);
+      call.on("stream", (remoteStream) => {
+        remoteVideo.srcObject = remoteStream;
+      });
     });
   });
 
-  peer.on('error', err => {
-    alert("Error: " + err);
+  peer.on("error", (err) => {
+    alert("Peer error: " + err);
     console.error(err);
-    waitingPopup.style.display = "none";
-    rolePopup.style.display = "flex";
+    window.location.reload();
   });
 };
 
+// Join call as joiner
 connectBtn.onclick = async () => {
-  const target = connectInput.value.trim();
-  if (!target) return alert("Enter a valid ID to connect.");
+  const targetId = connectInput.value.trim();
+  if (!targetId) return alert("Please enter a Call ID.");
 
   joinPopup.style.display = "none";
-  waitingPopup.style.display = "flex";
+  videoContainer.style.display = "flex";
 
   peer = new Peer();
 
-  peer.on("open", async () => {
+  peer.on("open", async (id) => {
+    console.log("My peer ID:", id);
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     localVideo.srcObject = localStream;
 
-    call = peer.call(target, localStream);
-
-    call.on("stream", remoteStream => {
+    currentCall = peer.call(targetId, localStream);
+    currentCall.on("stream", (remoteStream) => {
       remoteVideo.srcObject = remoteStream;
-      waitingPopup.style.display = "none";
     });
 
-    call.on("close", () => {
+    currentCall.on("close", () => {
       alert("Call ended.");
       window.location.reload();
     });
 
-    call.on("error", err => {
+    currentCall.on("error", (err) => {
       alert("Call error: " + err);
       console.error(err);
       window.location.reload();
     });
   });
 
-  peer.on('error', err => {
+  peer.on("error", (err) => {
     alert("Peer error: " + err);
     console.error(err);
-    waitingPopup.style.display = "none";
-    rolePopup.style.display = "flex";
+    window.location.reload();
   });
 };

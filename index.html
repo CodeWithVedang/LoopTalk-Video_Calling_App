@@ -1,46 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Video Call App</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Peer-to-Peer Video Call</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <!-- Role selection popup -->
   <div class="popup-screen" id="rolePopup">
     <div class="popup-box">
-      <h2>Start or Join a Call</h2>
+      <h2>Select an option</h2>
       <button onclick="chooseRole('create')">Create Call</button>
       <button onclick="chooseRole('join')">Join Call</button>
     </div>
   </div>
 
-  <div class="popup-screen" id="createPopup">
+  <!-- Create call popup -->
+  <div class="popup-screen" id="createPopup" style="display:none;">
     <div class="popup-box">
       <h2>Your Call ID</h2>
-      <input type="text" id="myId" readonly>
-      <button id="copyBtn">Copy</button>
-      <button id="startBtn">Start Video</button>
+      <input type="text" id="myId" readonly />
+      <button id="copyBtn">Copy ID</button>
+      <button id="startBtn">Start Call</button>
     </div>
   </div>
 
-  <div class="popup-screen" id="joinPopup">
+  <!-- Join call popup -->
+  <div class="popup-screen" id="joinPopup" style="display:none;">
     <div class="popup-box">
       <h2>Enter Call ID to Join</h2>
-      <input type="text" id="connectTo" placeholder="Enter username to connect">
+      <input type="text" id="connectTo" placeholder="Enter Call ID" />
       <button id="connectBtn">Join Call</button>
     </div>
   </div>
 
-  <div class="popup-screen" id="waitingPopup">
-    <div class="popup-box">
-      <p>Waiting for another user to connect...</p>
-    </div>
-  </div>
-
-  <div class="video-container">
-    <video id="localVideo" autoplay muted></video>
-    <video id="remoteVideo" autoplay></video>
+  <!-- Video container -->
+  <div class="video-container" style="display:none;">
+    <video id="localVideo" autoplay muted playsinline></video>
+    <video id="remoteVideo" autoplay playsinline></video>
   </div>
 
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
