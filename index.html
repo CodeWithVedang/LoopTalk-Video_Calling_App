@@ -5,16 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Loop Talk Video Calling App</title>
   <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
 </head>
 <body>
-  <!-- Welcome Screen -->
-  <div id="welcome" class="welcome">
-    <div class="welcome-content">
-      <h1>Loop Talk</h1>
-      <p>Private, peer-to-peer video calling from your browser.<br>No signup. No hassle.</p>
-      <button id="startCallingBtn">Start Calling Free</button>
-    </div>
+  <div id="welcome" class="welcome-screen">
+    <h1>Loop Talk Video Calling App</h1>
+    <p>Free, private, peer-to-peer video calls. No signup required.</p>
+    <button id="startCallingBtn" class="btn primary">Start Calling Free</button>
     <footer>
       Developed by <a href="https://github.com/CodeWithVedang" target="_blank">CodeWithVedang</a>
     </footer>
@@ -22,58 +19,46 @@
 
   <!-- Role Selection -->
   <div id="rolePopup" class="popup hidden">
-    <div class="popup-box">
-      <h2>What would you like to do?</h2>
-      <button onclick="chooseRole('create')">Create Call</button>
-      <button onclick="chooseRole('join')">Join Call</button>
+    <h2>What would you like to do?</h2>
+    <div class="btn-group">
+      <button onclick="chooseRole('create')" class="btn secondary">Create Call</button>
+      <button onclick="chooseRole('join')" class="btn secondary">Join Call</button>
     </div>
   </div>
 
   <!-- Create Call -->
   <div id="createPopup" class="popup hidden">
-    <div class="popup-box">
-      <h2>Your Call ID</h2>
-      <input type="text" id="myId" readonly />
-      <button onclick="copyId()">Copy</button>
-      <button id="startBtn">Start Call</button>
+    <h2>Your Call ID</h2>
+    <input id="myId" readonly />
+    <div class="btn-group">
+      <button onclick="copyId()" class="btn copy">Copy</button>
+      <button id="startBtn" class="btn primary">Start Call</button>
     </div>
   </div>
 
   <!-- Join Call -->
   <div id="joinPopup" class="popup hidden">
-    <div class="popup-box">
-      <h2>Enter Call ID</h2>
-      <input type="text" id="connectTo" placeholder="Call ID" />
-      <button id="connectBtn">Join Call</button>
-    </div>
+    <h2>Enter Call ID</h2>
+    <input id="connectTo" placeholder="Enter ID" />
+    <button id="connectBtn" class="btn primary">Join Call</button>
   </div>
 
   <!-- Video Interface -->
-  <div id="videoInterface" class="hidden">
-    <div class="brand-header">
-      <h2>Loop Talk Video Calling App</h2>
-      <p>Developed by <a href="https://github.com/CodeWithVedang" target="_blank">CodeWithVedang</a></p>
+  <div id="videoInterface" class="video-call hidden">
+    <div class="remote-video">
+      <video id="remoteVideo" autoplay playsinline></video>
     </div>
-
-    <div class="video-area">
-      <div class="video-box">
-        <video id="localVideo" autoplay muted></video>
-        <p>You</p>
-      </div>
-      <div class="video-box">
-        <video id="remoteVideo" autoplay></video>
-        <p>Caller</p>
-      </div>
+    <div class="local-video">
+      <video id="localVideo" autoplay playsinline muted></video>
     </div>
-
     <div class="controls">
-      <button id="toggleVideoBtn">📹</button>
-      <button id="toggleAudioBtn">🎤</button>
-      <button id="endCallBtn" class="end">❌ End Call</button>
+      <button id="toggleVideoBtn" class="btn control">📹</button>
+      <button id="toggleAudioBtn" class="btn control">🎤</button>
+      <button id="endCallBtn" class="btn end">End Call</button>
     </div>
   </div>
 
-  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
+    
